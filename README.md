@@ -15,3 +15,12 @@ TRITON_IMAGE="docker.io/docexoty/tritonserver:latest" && podman-hpc run -it --gp
 
 pip install torchvision==0.18.0
 ```
+
+### Build the client
+```bash
+cmake -B build -S src -DCMAKE_INSTALL_PREFIX=/pscratch/sd/x/xju/athena_dev/triton_20250408_nosystemmd/install
+
+cmake --build build -- install
+
+./build/bin/test_resnet50  -u "login16:8001" -i models/resnet50/img1.txt 
+```

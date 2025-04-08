@@ -24,33 +24,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import numpy as np
 import tritonclient.grpc as grpcclient
-from PIL import Image
-from torchvision import transforms
-from tritonclient.utils import triton_to_np_dtype
-from tritonclient.utils import np_to_triton_dtype
-
-
-# preprocessing function
-def rn50_preprocess(img_path="img1.jpg"):
-    img = Image.open(img_path)
-    preprocess = transforms.Compose(
-        [
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]
-    )
-    return preprocess(img).numpy()
+from preprocess import rn50_preprocess
 
 transformed_img = rn50_preprocess()
-print(transformed_img.shape, transformed_img.dtype)
-flattened_img = transformed_img.flatten()
-print(flattened_img.shape, flattened_img.dtype)
-flattened_img.tofile("img1.bin")
-# np.savetxt("img1.txt", transformed_img)
 
 # Setting up client
 client = grpcclient.InferenceServerClient(url="localhost:8001")

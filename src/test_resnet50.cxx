@@ -1,16 +1,25 @@
 #include "TritonClientTool.hpp"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
 
 namespace tc = triton::client;
 
 std::vector<float> rn50_preprocess(const std::string &full_path)
 {
   // Read raw binary data
-  std::ifstream bin_file(full_path, std::ios::binary);
+  std::ifstream bin_file(full_path);
   int height = 224, width = 224, channels = 3;
   int total_size = height * width * channels;
-  std::vector<float> data(total_size);
-  bin_file.read(reinterpret_cast<char*>(data.data()), total_size * sizeof(float));
- return input_tensor_values;
+  std::vector<float> data;
+  data.reserve(total_size);
+  float val;
+  while (bin_file) {
+    bin_file >> val;
+    if (!bin_file.fail()) data.push_back(val);
+  }
+  return data;
 }
 
 
@@ -49,7 +58,8 @@ int main(int argc, char* argv[])
         }
     }
 
-    bool verbose = false;
+    std::cout <<"Reading input file: " << input_file << std::endl;
+
     uint32_t client_timeout = 0;
     std::string model_version = "";
     auto m_client = std::make_unique<TritonClientTool>(
@@ -58,12 +68,26 @@ int main(int argc, char* argv[])
     m_client->ClearInput();
 
     std::vector<float> inputValues = rn50_preprocess(input_file);
-    std::vector<int64_t> inputShape{1, 3, 224, 224};
+    std::cout << "total input entries: " << inputValues.size() << std::endl;
+    std::vector<int64_t> inputShape{3, 224, 224};
+
+    // print the first 5 values of input
+    std::string input_values = "[";
+    for (size_t i = 0; i < 5; ++i) {
+        input_values += std::to_string(inputValues[i]);
+        if (i != inputValues.size() - 1) {
+            input_values += " ";
+        }
+    }
+    input_values += "]";
+    std::cout << "Input: " << input_values << std::endl;
+    std::string expected_input_values = "[1.015926  1.0330508 1.015926  1.015926  1.015926 ]";
+    std::cout << "Expected Input: " << expected_input_values << std::endl;
 
     m_client->AddInput<float>("input__0", inputShape, inputValues);
     std::vector<float> outProbs;
     std::vector<int64_t> outShape{1, 1000};
-    m_client->GetOutput<int64_t>("LABELS", outProbs, outShape);
+    m_client->GetOutput<float>("output__0", outProbs, outShape);
 
     std::string expected_values = "[-0.25864124  4.3533406  -2.0574622  -1.9991533  -3.178356]";
     std::string output_values = "[";
