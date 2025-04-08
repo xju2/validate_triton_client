@@ -25,10 +25,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import numpy as np
-import tritonclient.http as httpclient
+import tritonclient.grpc as grpcclient
 from PIL import Image
 from torchvision import transforms
 from tritonclient.utils import triton_to_np_dtype
+from tritonclient.utils import np_to_triton_dtype
 
 
 # preprocessing function
@@ -44,20 +45,23 @@ def rn50_preprocess(img_path="img1.jpg"):
     )
     return preprocess(img).numpy()
 
-
 transformed_img = rn50_preprocess()
+print(transformed_img.shape, transformed_img.dtype)
+flattened_img = transformed_img.flatten()
+print(flattened_img.shape, flattened_img.dtype)
+flattened_img.tofile("img1.bin")
+# np.savetxt("img1.txt", transformed_img)
 
 # Setting up client
-client = httpclient.InferenceServerClient(url="localhost:8000")
+client = grpcclient.InferenceServerClient(url="localhost:8001")
 
-inputs = httpclient.InferInput("input__0", transformed_img.shape, datatype="FP32")
-inputs.set_data_from_numpy(transformed_img, binary_data=True)
+inputs = grpcclient.InferInput("input__0", transformed_img.shape, datatype="FP32")
+inputs.set_data_from_numpy(transformed_img)
 
-outputs = httpclient.InferRequestedOutput(
-    "output__0", binary_data=True, class_count=1000
-)
+outputs = grpcclient.InferRequestedOutput("output__0")
 
 # Querying the server
 results = client.infer(model_name="resnet50", inputs=[inputs], outputs=[outputs])
-inference_output = results.as_numpy("output__0")
+inference_output = results.as_numpy("output__0").flatten()
+print(inference_output.shape, inference_output.dtype)
 print(inference_output[:5])
