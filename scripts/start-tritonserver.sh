@@ -1,5 +1,7 @@
 #!/bin/bash
+
 OUTPUTFILE="node_id.txt"
+
 while getopts "o:" opt; do
   case $opt in
     o)
