@@ -1,4 +1,18 @@
 #!/bin/bash
+OUTPUTFILE="node_id.txt"
+while getopts "o:" opt; do
+  case $opt in
+    o)
+      OUTPUTFILE=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+  esac
+done
+
+OUTPUTFILE="$(realpath $OUTPUTFILE)"
 
 WORK_DIR="$( dirname "${BASH_SOURCE[0]}" )/../"
 WORK_DIR=$(readlink -f $WORK_DIR)
@@ -14,7 +28,7 @@ TRITON_LOG_VERBOSE=false
 
 TRITON_LOG_VERBOSE_FLAGS=""
 TRITON_SEVER_NAME="${SLURMD_NODENAME}"
-echo "$SLURMD_NODENAME" > $TRITON_JOBS_DIR/node_id.txt
+echo "$SLURMD_NODENAME" > $OUTPUTFILE
 
 #Setup Triton flags
 if [ "$TRITON_LOG_VERBOSE" = true ]

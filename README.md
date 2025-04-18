@@ -10,7 +10,25 @@ Use the model from [Triton server tutorial with PyTorch](https://github.com/trit
 
 #### Start the server:
 ```bash
-./scripts/start_triton_server.sh
+./scripts/start-tritonserver.sh
+```
+
+#### Build the client
+
+```bash
+cd /pscratch/sd/x/xju/athena_dev/triton_20250408_nosystemmd
+cmake -B build -S client-r24.12/src/c++ \
+     -DBUILD_SHARED_LIBS=ON \
+     -DCMAKE_BUILD_TYPE=Release \
+     -DCMAKE_CXX_STANDARD=20 \
+     -DCMAKE_INSTALL_PREFIX=${PWD}/install \
+     -DTRITON_ENABLE_CC_GRPC=ON \
+     -DTRITON_ENABLE_CC_HTTP=OFF \
+     -DTRITON_ENABLE_TESTS=OFF \
+     -DTRITON_ENABLE_ZLIB=OFF \
+     -DTRITON_USE_THIRD_PARTY=OFF \
+     -DTRITON_REPO_ORGANIZATION=https://github.com/triton-inference-server \
+     -DTRITON_KEEP_TYPEINFO=ON
 ```
 
 #### Build the client and run the test
