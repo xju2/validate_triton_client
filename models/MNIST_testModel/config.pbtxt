@@ -1,0 +1,18 @@
+name: "MNIST_testModel"
+platform: "onnxruntime"
+max_batch_size: 100
+input [
+    {
+        name: "flatten_input"
+        data_type: TYPE_FP32
+        dims: [ -1, 28, 28]
+    }
+]
+
+output [
+    {
+        name: "dense_1/Softmax"
+        data_type: TYPE_FP32
+        dims: [ -1, 10]
+    }
+]
